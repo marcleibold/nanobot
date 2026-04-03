@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nanobot
+  namespace: argo-cd
+spec:
+  project: spof-cluster
+  sources:
+    - repoURL: "https://github.com/marcleibold/nanobot.git"
+      targetRevision: HEAD
+      path: resources
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: nanobot
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
