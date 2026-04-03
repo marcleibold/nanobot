@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nanobot
+  namespace: nanobot
+  labels:
+    app: nanobot
+spec:
+  selector:
+    matchLabels:
+      app: nanobot
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nanobot
+    spec:
+      containers:
+        - name: nanobot
+          image: ghcr.io/marcleibold/nanobot:latest # TODO: pin to a specific tag after first build
+          command: ["nanobot"]
+          args: ["gateway"]
+          env:
+            - name: TZ
+              value: "Europe/Berlin"
+          ports:
+            - containerPort: 18790
+              name: http
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /root/.nanobot/config.json
+              subPath: config.json
+              readOnly: true
+            - name: data
+              mountPath: /root/.nanobot
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
+      volumes:
+        - name: config
+          secret:
+            secretName: nanobot-config
+            items:
+              - key: config.json
+                path: config.json
+        - name: data
+          persistentVolumeClaim:
+            claimName: nanobot-data
+      restartPolicy: Always
