@@ -25,29 +25,18 @@ spec:
           env:
             - name: TZ
               value: "Europe/Berlin"
-          ports:
-            - containerPort: 18790
-              name: http
           startupProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            failureThreshold: 30
+            exec:
+              command: ["python3", "-c", "import os, signal; os.kill(1, 0)"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 12
           livenessProbe:
-            httpGet:
-              path: /health
-              port: http
+            exec:
+              command: ["python3", "-c", "import os, signal; os.kill(1, 0)"]
             periodSeconds: 30
             timeoutSeconds: 5
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: http
-            periodSeconds: 10
-            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             - name: config
               mountPath: /root/.nanobot/config.json

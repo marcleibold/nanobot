@@ -60,13 +60,9 @@ NanoBot does not require GPU or specific hardware — it runs on any amd64 node.
 - Runs `nanobot gateway` as the container entrypoint
 - Mounts `config.json` from a SealedSecret as a read-only file
 - Mounts a PVC for persistent runtime data (Matrix sync state, E2EE keys)
-- Health probes on `/health` endpoint (port 18790)
+- Exec-based startup and liveness probes (process health check)
 - Resource limits: 1 CPU / 1Gi memory
-
-### Service (`resources/service.yaml`)
-
-- ClusterIP service exposing port 18790
-- Used for internal health probes and potential cluster-internal access
+- No HTTP port exposed — the gateway does not start a web server
 
 ### PersistentVolumeClaim (`resources/pvc.yaml`)
 

@@ -8,12 +8,11 @@ Open tasks and technical debt, roughly ordered by priority.
 - [x] Obtain Matrix access token and device ID for the nanobot account
 - [x] Obtain a MiniMax API key and re-seal `resources/secret.yaml`
 - [x] Create `config.json` and seal it as `resources/secret.yaml`
-- [ ] Trigger first Docker image build (push Dockerfile to master, or manual dispatch)
-- [ ] Verify GHCR image pull works from the cluster (may need imagePullSecret for private packages)
+- [x] Trigger first Docker image build (push Dockerfile to master, or manual dispatch)
+- [x] Verify GHCR image pull works from the cluster (repo and package set to public)
 
 ## Post-deployment validation
 
-- [ ] Verify `/health` endpoint accuracy — does it reflect Matrix channel connectivity?
 - [ ] Verify E2EE works end-to-end (send encrypted message, confirm nanobot decrypts and responds)
 - [ ] Verify PVC data persists across pod restarts (kill pod, check Matrix sync resumes)
 - [ ] Verify memory/conversation history persists across restarts
@@ -22,11 +21,11 @@ Open tasks and technical debt, roughly ordered by priority.
 ## Improvements
 
 - [ ] Pin Docker image to SHA tag instead of `latest` in deployment.yaml
-- [ ] Add imagePullSecret if GHCR package is private
 - [ ] Add `nodeSelector` to exclude rpi3 (arm) if image is amd64-only
 - [ ] Consider adding `podDisruptionBudget` (probably overkill for single replica)
 - [ ] Add Prometheus metrics scraping if nanobot exposes metrics
 - [ ] Add network policy to restrict egress to only matrix.leibold.tech and LLM provider domains
+- [ ] Add a deeper liveness check (e.g., verify Matrix sync recency) once upstream adds HTTP health endpoint
 
 ## Technical debt
 

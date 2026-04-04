@@ -20,7 +20,6 @@ nanobot/
       docker.yml          # CI: build and push Docker image to GHCR
   resources/
     deployment.yaml       # Kubernetes Deployment (gateway mode)
-    service.yaml          # ClusterIP Service (port 18790)
     pvc.yaml              # PersistentVolumeClaim for runtime data
     secret.yaml           # SealedSecret for config.json
 ```
@@ -131,8 +130,8 @@ kubectl create secret generic nanobot-config \
 
 ## Networking
 
-- **Gateway port**: `18790` (nanobot default)
-- **Service**: ClusterIP on port 18790 (internal only, no ingress)
+- **No HTTP server**: the gateway does not expose an HTTP port (the `port` in config is unused by the current NanoBot version)
+- **No Service or Ingress**: since there is no listening port, no Kubernetes Service is needed
 - **Matrix connection**: outbound HTTPS to `matrix.leibold.tech`
 - NanoBot acts as a Matrix client — all communication is outbound-initiated, no inbound traffic required
 

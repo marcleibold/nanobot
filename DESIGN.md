@@ -93,26 +93,33 @@ This document captures the key design decisions, trade-offs, and alternatives co
 
 **Rationale**: Gateway mode is the only way to maintain persistent channel connections (Matrix, Telegram, etc.). The CLI mode is for ad-hoc local use.
 
-## D6: Health probes targeting /health
+## D6: Exec-based health probes (no HTTP endpoint)
 
-**Decision**: Configure startup, liveness, and readiness probes against the `/health` HTTP endpoint.
+**Decision**: Use exec-based liveness and startup probes that verify the main process is alive.
 
-**Context**: NanoBot exposes an HTTP server on its gateway port (18790) with a `/health` endpoint.
+**Context**: The NanoBot gateway does not start an HTTP server despite the `port` config option. The `gateway` command runs channels and the agent loop as async tasks but never binds a socket. The port number in config appears to be reserved for future use.
+
+**Discovery**: Initial deployment used `httpGet` probes targeting `/health` on port 18790. The startup probe consistently failed with `connection refused` because no HTTP server was listening.
+
+**Current probes**:
+- **Startup probe**: `python3 -c "import os, signal; os.kill(1, 0)"` — verifies PID 1 (nanobot) is alive
+- **Liveness probe**: same command, runs every 30s
 
 **Trade-offs**:
 
-- (+) Standard Kubernetes health checking
-- (+) Detects hung or crashed gateway processes
-- (-) Unclear whether `/health` accurately reflects Matrix channel connectivity (may report healthy even if Matrix sync is broken)
-- This needs validation after initial deployment (see TODO.md)
+- (+) Works with the actual gateway behavior
+- (+) Simple, no dependencies
+- (-) Cannot detect a hung gateway that is still running but not processing messages
+- (-) No readiness probe — pod is "ready" as soon as the process starts
+- Consider adding a deeper health check in the future (e.g., check Matrix sync recency via a sidecar or agent skill)
 
-## D7: No ingress
+## D7: No Service or Ingress
 
-**Decision**: Do not expose NanoBot via ingress. The service is ClusterIP-only.
+**Decision**: Do not create a Kubernetes Service or Ingress for NanoBot.
 
-**Context**: NanoBot acts as a Matrix client — all communication is outbound-initiated. The gateway HTTP server (port 18790) is only needed internally for Kubernetes health probes. Exposing it externally would add attack surface with no functional benefit.
+**Context**: NanoBot acts as a Matrix client — all communication is outbound-initiated. The gateway does not expose an HTTP server, so there is no port to proxy. No inbound traffic is needed.
 
-**Rationale**: An ingress could be added later if external API access or monitoring is needed, but for a Matrix-only deployment it is unnecessary.
+**Rationale**: A Service targeting a non-existent port is misleading and serves no purpose. If the upstream NanoBot adds an HTTP API in the future, a Service can be added at that time.
 
 ## D8: GitHub Actions for image builds
 
