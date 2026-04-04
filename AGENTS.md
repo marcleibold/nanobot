@@ -102,7 +102,7 @@ This config is stored as a SealedSecret (`nanobot-config`) and mounted into the 
       "accessToken": "<MATRIX_ACCESS_TOKEN>",
       "deviceId": "NANOBOT01",
       "e2eeEnabled": true,
-      "allowFrom": ["@spof:matrix.leibold.tech"],
+      "allowFrom": ["@mleibold:matrix.leibold.tech"],
       "groupPolicy": "mention"
     }
   },
