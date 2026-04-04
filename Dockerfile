@@ -14,6 +14,7 @@ RUN apt-get update && \
         vim-tiny \
         jq \
         rsync \
+        openssh-client \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,8 +37,16 @@ RUN uv pip install --system --no-cache ".[matrix]"
 # Create config directory
 RUN mkdir -p /root/.nanobot
 
+# Symlink ~/.ssh into the PVC-backed data dir so SSH keys survive pod restarts.
+# The ssh/ subdir is created at runtime by the entrypoint (PVC mounts overlay
+# the build-time directory, so we can't rely on build-time mkdir for it).
+RUN ln -s /root/.nanobot/ssh /root/.ssh
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Gateway default port
 EXPOSE 18790
 
-ENTRYPOINT ["nanobot"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gateway"]
